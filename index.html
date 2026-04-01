@@ -1,0 +1,566 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{padding:1rem 0;font-size:14px}
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:14px}
+.tab{padding:8px 14px;font-size:13px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.tab.active{color:var(--color-text-info);border-bottom-color:#185FA5}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.stitle{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.mc{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem .875rem}
+.mc-label{font-size:11px;color:var(--color-text-secondary);font-weight:500;margin-bottom:4px}
+.mc-val{font-size:19px;font-weight:500;color:var(--color-text-primary);line-height:1}
+.mc-val.green{color:#1D9E75}.mc-val.yellow{color:#BA7517}.mc-val.red{color:#E24B4A}
+.mc-trend{font-size:11px;color:var(--color-text-tertiary);margin-top:3px}
+.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:var(--color-text-secondary);font-weight:500}
+.field input,.field select{font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.row .field{flex:1;min-width:140px}
+.btn{border-radius:var(--border-radius-md);padding:7px 13px;font-size:13px;cursor:pointer;font-weight:500}
+.btn-p{background:var(--color-background-info);color:var(--color-text-info);border:0.5px solid var(--color-border-info)}.btn-p:hover{opacity:.85}
+.btn-s{background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary)}.btn-s:hover{background:var(--color-background-secondary)}
+.btn-g{background:var(--color-background-success);color:var(--color-text-success);border:0.5px solid var(--color-border-success)}.btn-g:hover{opacity:.85}
+.btn-d{background:transparent;color:var(--color-text-danger);border:0.5px solid var(--color-border-danger)}.btn-d:hover{background:var(--color-background-danger)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.call-entry{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.875rem 1rem;margin-bottom:8px;position:relative}
+.call-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer}
+.call-num{font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+.call-summary{font-size:12px;color:var(--color-text-tertiary)}
+.call-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.call-body.hidden{display:none}
+.score-row{display:flex;gap:6px;align-items:center}
+.star{font-size:16px;cursor:pointer;color:var(--color-border-secondary);transition:color .1s;user-select:none}
+.star.on{color:#BA7517}
+.ht{width:100%;font-size:12px;border-collapse:collapse}
+.ht th{font-weight:500;color:var(--color-text-secondary);text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap}
+.ht td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.ht tr:last-child td{border-bottom:none}
+.ht tr:hover td{background:var(--color-background-secondary)}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 7px;border-radius:99px}
+.badge.green{background:#EAF3DE;color:#3B6D11}.badge.yellow{background:#FAEEDA;color:#854F0B}
+.badge.red{background:#FCEBEB;color:#A32D2D}.badge.neu{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.cbox{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:12px;font-family:var(--font-mono);color:var(--color-text-secondary);white-space:pre;overflow-x:auto;margin-top:10px;line-height:1.7}
+.ts{font-size:11px;color:var(--color-text-tertiary);margin-top:8px}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.sc{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem;text-align:center}
+.sc .sl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.sc .sv{font-size:15px;font-weight:500}
+.hint{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.toggle-link{font-size:12px;color:var(--color-text-info);cursor:pointer;text-decoration:underline;margin-bottom:10px;display:inline-block}
+.chart-wrap{position:relative;height:160px;margin-top:8px}
+canvas{display:block}
+.ei{font-size:11px;color:var(--color-text-info);font-weight:500}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+</style>
+
+<div class="app">
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('entry')">Data Entry</div>
+  <div class="tab" onclick="switchTab('calls')">Call Log</div>
+  <div class="tab" onclick="switchTab('history')">History</div>
+  <div class="tab" onclick="switchTab('summary')">Summary</div>
+</div>
+
+<!-- DATA ENTRY -->
+<div id="tab-entry" class="panel active">
+  <div class="card">
+    <div class="sh"><div class="stitle">Session</div><div class="ei" id="edit-ind" style="display:none">Editing saved record</div></div>
+    <div class="row">
+      <div class="field"><label>Date</label><input type="date" id="f-date"></div>
+      <div class="field"><label>Agent name</label><input type="text" id="f-agent" placeholder="e.g. Andrea"></div>
+    </div>
+  </div>
+
+  <div class="metric-row" id="metrics-display"></div>
+
+  <!-- Mode toggle -->
+  <span class="toggle-link" id="mode-toggle" onclick="toggleMode()">Switch to bulk entry mode</span>
+
+  <!-- Individual call mode -->
+  <div id="mode-individual">
+    <div class="card">
+      <div class="sh">
+        <div class="stitle">Calls this session</div>
+        <button class="btn btn-g" onclick="addCall()">+ Add call</button>
+      </div>
+      <div id="call-list"><p style="font-size:13px;color:var(--color-text-tertiary)">No calls added yet. Click "+ Add call" to begin.</p></div>
+    </div>
+  </div>
+
+  <!-- Bulk entry mode -->
+  <div id="mode-bulk" style="display:none">
+    <div class="card">
+      <div class="stitle">Bulk entry — averages or totals</div>
+      <div class="ig">
+        <div class="field"><label>Number of calls</label><input type="number" id="b-calls" min="0" placeholder="e.g. 222"></div>
+        <div class="field"><label>Talk time total (mins)</label><input type="number" id="b-talk" min="0" placeholder="0"></div>
+        <div class="field"><label>Hold time total (mins)</label><input type="number" id="b-hold" min="0" placeholder="0"></div>
+        <div class="field"><label>ACW total (mins)</label><input type="number" id="b-acw" min="0" placeholder="0"></div>
+        <div class="field"><label>Surveys answered</label><input type="number" id="b-surv" min="0" placeholder="0"></div>
+        <div class="field"><label>Transfers to survey</label><input type="number" id="b-tts" min="0" placeholder="0"></div>
+        <div class="field"><label>Knowledge avg (1–5)</label><input type="number" id="b-know" min="1" max="5" step="0.01" placeholder="e.g. 4.92"></div>
+        <div class="field"><label>Courtesy avg (1–5)</label><input type="number" id="b-cour" min="1" max="5" step="0.01" placeholder="e.g. 4.96"></div>
+        <div class="field"><label>STR score avg (1–5)</label><input type="number" id="b-str-score" min="1" max="5" step="0.01" placeholder="e.g. 4.5"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stitle">Schedule</div>
+      <div class="ig">
+        <div class="field"><label>Conformance %</label><input type="number" id="b-conf" min="0" max="100" step="0.01" placeholder="e.g. 92"><span class="hint">Direct % or use hours below</span></div>
+        <div class="field"><label>Hours adhered</label><input type="number" id="b-adhered-hrs" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>Hours scheduled</label><input type="number" id="b-sched-hrs" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>Adherence %</label><input type="number" id="b-adh" min="0" max="100" step="0.01" placeholder="e.g. 72"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule (shared) -->
+  <div id="sched-card" style="display:none" class="card">
+    <div class="stitle">Schedule (individual mode)</div>
+    <div class="ig">
+      <div class="field"><label>Conformance %</label><input type="number" id="i-conf" min="0" max="100" step="0.01" placeholder="e.g. 92"></div>
+      <div class="field"><label>Adherence %</label><input type="number" id="i-adh" min="0" max="100" step="0.01" placeholder="e.g. 72"></div>
+    </div>
+  </div>
+
+  <div class="brow">
+    <button class="btn btn-p" onclick="saveRecord()">Save record</button>
+    <button class="btn btn-s" onclick="clearSession()">Clear</button>
+    <button class="btn btn-s" onclick="copyNotes()">Copy notes</button>
+    <button class="btn btn-s" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div class="cbox" id="copy-box" style="display:none"></div>
+  <div class="ts" id="last-saved"></div>
+</div>
+
+<!-- CALL LOG -->
+<div id="tab-calls" class="panel">
+  <div class="card">
+    <div class="sh"><div class="stitle">All calls this session</div><button class="btn btn-g btn-sm" onclick="addCall();switchTab('entry')">+ Add call</button></div>
+    <div id="call-log-view"><p style="font-size:13px;color:var(--color-text-tertiary)">No calls logged yet.</p></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="tab-history" class="panel">
+  <div class="card">
+    <div class="stitle">Saved records</div>
+    <div id="history-list"><p style="font-size:13px;color:var(--color-text-tertiary)">No records saved yet.</p></div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div id="tab-summary" class="panel">
+  <div class="card">
+    <div class="sh">
+      <div class="stitle">Performance overview</div>
+      <select id="sum-period" onchange="renderSummary()" style="font-size:13px;padding:5px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)">
+        <option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="all">All time</option>
+      </select>
+    </div>
+    <div id="summary-content"><p style="font-size:13px;color:var(--color-text-tertiary)">No data available.</p></div>
+  </div>
+</div>
+</div>
+
+<script>
+const SK = 'ccm_v5';
+let records = [], calls = [], bulkMode = false;
+let prevM = {}, callIdCounter = 0;
+
+function load() { try { records = JSON.parse(localStorage.getItem(SK)||'[]'); } catch(e){ records=[]; } }
+function store() { try { localStorage.setItem(SK, JSON.stringify(records)); } catch(e){} }
+function gv(id){ return parseFloat(document.getElementById(id).value); }
+function gvs(id){ const v=gv(id); return isNaN(v)?0:v; }
+function gs(id){ return document.getElementById(id).value.trim(); }
+function isN(v){ return v===null||v===undefined||isNaN(v); }
+
+function fmtAht(mins){
+  if(isN(mins)||mins<0) return '—';
+  const m=Math.floor(mins), s=Math.round((mins-m)*60);
+  return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+
+// ── CALLS ──────────────────────────────────────────────────────────────────
+function addCall(){
+  callIdCounter++;
+  calls.push({id:callIdCounter,talk:0,hold:0,acw:0,know:0,cour:0,strScore:0,tts:false,collapsed:false});
+  renderCalls(); updateMetrics();
+}
+function removeCall(id){
+  calls=calls.filter(c=>c.id!==id); renderCalls(); updateMetrics();
+}
+function updateCall(id,field,val){
+  const c=calls.find(c=>c.id===id); if(!c) return;
+  c[field]=field==='tts'?val:parseFloat(val)||0;
+  updateMetrics();
+}
+function toggleCollapse(id){
+  const c=calls.find(c=>c.id===id); if(!c) return;
+  c.collapsed=!c.collapsed; renderCalls();
+}
+function setScore(id,field,val){
+  const c=calls.find(c=>c.id===id); if(!c) return;
+  c[field]=val; renderCalls(); updateMetrics();
+}
+
+function starHtml(id,field,val,size){
+  let h='';
+  for(let i=1;i<=5;i++){
+    h+=`<span class="star${i<=val?' on':''}" onclick="setScore(${id},'${field}',${i})" style="font-size:${size||16}px">★</span>`;
+  }
+  return h;
+}
+
+function callSummaryText(c){
+  const aht=c.talk+c.hold+c.acw;
+  return `AHT ${fmtAht(aht)} · Know ${c.know||'—'} · Cour ${c.cour||'—'} · TTS ${c.tts?'Yes':'No'}`;
+}
+
+function renderCalls(){
+  const el=document.getElementById('call-list');
+  const logEl=document.getElementById('call-log-view');
+  if(!calls.length){
+    el.innerHTML='<p style="font-size:13px;color:var(--color-text-tertiary)">No calls added yet. Click "+ Add call" to begin.</p>';
+    logEl.innerHTML='<p style="font-size:13px;color:var(--color-text-tertiary)">No calls logged yet.</p>';
+    return;
+  }
+  let h='';
+  calls.forEach((c,idx)=>{
+    const bodyClass=c.collapsed?'call-body hidden':'call-body';
+    h+=`<div class="call-entry">
+      <div class="call-header" onclick="toggleCollapse(${c.id})">
+        <div>
+          <span class="call-num">Call ${idx+1}</span>
+          <span class="call-summary" style="margin-left:10px">${callSummaryText(c)}</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:12px;color:var(--color-text-tertiary)">${c.collapsed?'▸':'▾'}</span>
+          <button class="btn btn-d btn-sm" onclick="event.stopPropagation();removeCall(${c.id})">Remove</button>
+        </div>
+      </div>
+      <div class="${bodyClass}">
+        <div class="field"><label>Talk time (mins)</label><input type="number" min="0" step="0.1" value="${c.talk||''}" placeholder="0" oninput="updateCall(${c.id},'talk',this.value)"></div>
+        <div class="field"><label>Hold time (mins)</label><input type="number" min="0" step="0.1" value="${c.hold||''}" placeholder="0" oninput="updateCall(${c.id},'hold',this.value)"></div>
+        <div class="field"><label>ACW (mins)</label><input type="number" min="0" step="0.1" value="${c.acw||''}" placeholder="0" oninput="updateCall(${c.id},'acw',this.value)"></div>
+        <div class="field"><label>Transfer to survey</label>
+          <select onchange="updateCall(${c.id},'tts',this.value==='yes')">
+            <option value="no" ${!c.tts?'selected':''}>No</option>
+            <option value="yes" ${c.tts?'selected':''}>Yes</option>
+          </select>
+        </div>
+        <div class="field"><label>Knowledge (1–5)</label><div class="score-row">${starHtml(c.id,'know',c.know)}<span style="font-size:12px;color:var(--color-text-secondary);margin-left:4px">${c.know||'—'}</span></div></div>
+        <div class="field"><label>Courtesy (1–5)</label><div class="score-row">${starHtml(c.id,'cour',c.cour)}<span style="font-size:12px;color:var(--color-text-secondary);margin-left:4px">${c.cour||'—'}</span></div></div>
+        <div class="field"><label>STR score (1–5)</label><div class="score-row">${starHtml(c.id,'strScore',c.strScore)}<span style="font-size:12px;color:var(--color-text-secondary);margin-left:4px">${c.strScore||'—'}</span></div></div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
+  // log view — full table
+  let lh=`<div style="overflow-x:auto"><table class="ht"><thead><tr><th>#</th><th>Talk</th><th>Hold</th><th>ACW</th><th>AHT</th><th>TTS</th><th>Know.</th><th>Cour.</th><th>STR score</th></tr></thead><tbody>`;
+  calls.forEach((c,idx)=>{
+    const aht=c.talk+c.hold+c.acw;
+    lh+=`<tr><td>${idx+1}</td><td>${c.talk}</td><td>${c.hold}</td><td>${c.acw}</td><td>${fmtAht(aht)}</td>
+      <td>${c.tts?'<span class="badge green">Yes</span>':'<span class="badge neu">No</span>'}</td>
+      <td>${c.know||'—'}</td><td>${c.cour||'—'}</td><td>${c.strScore||'—'}</td></tr>`;
+  });
+  lh+='</tbody></table></div>';
+  logEl.innerHTML=lh;
+}
+
+// ── METRICS ────────────────────────────────────────────────────────────────
+function computeFromCalls(){
+  if(!calls.length) return null;
+  const n=calls.length;
+  const totalTime=calls.reduce((s,c)=>s+c.talk+c.hold+c.acw,0);
+  const aht=totalTime/n;
+  const surveyed=calls.filter(c=>c.tts).length;
+  const str=(surveyed/n)*100;
+  const tts=(surveyed/n)*100;
+  const knowVals=calls.filter(c=>c.know>0).map(c=>c.know);
+  const courVals=calls.filter(c=>c.cour>0).map(c=>c.cour);
+  const strScVals=calls.filter(c=>c.strScore>0).map(c=>c.strScore);
+  const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+  const knowAvg=avg(knowVals), courAvg=avg(courVals), strScAvg=avg(strScVals);
+  let csat=null;
+  if(knowAvg!==null&&courAvg!==null&&strScAvg!==null){
+    csat=((knowAvg+courAvg+strScAvg)/3/5)*100;
+  }
+  return {aht,str,tts,knowAvg,courAvg,strScAvg,csat,n};
+}
+
+function computeFromBulk(){
+  const n=gvs('b-calls');
+  const talk=gvs('b-talk'),hold=gvs('b-hold'),acw=gvs('b-acw');
+  const surv=gvs('b-surv'),ttsN=gvs('b-tts');
+  const know=gv('b-know'),cour=gv('b-cour'),strSc=gv('b-str-score');
+  const aht=n>0?(talk+hold+acw)/n:null;
+  const str=n>0?(surv/n)*100:null;
+  const tts=n>0?(ttsN/n)*100:null;
+  let csat=null,knowAvg=null,courAvg=null,strScAvg=null;
+  if(!isNaN(know)&&!isNaN(cour)&&!isNaN(strSc)){
+    knowAvg=know;courAvg=cour;strScAvg=strSc;
+    csat=((know+cour+strSc)/3/5)*100;
+  }
+  return {aht,str,tts,knowAvg,courAvg,strScAvg,csat,n};
+}
+
+function getSchedule(){
+  if(!bulkMode){
+    return {conf:isNaN(gv('i-conf'))?null:gv('i-conf'), adh:isNaN(gv('i-adh'))?null:gv('i-adh')};
+  }
+  const confD=gv('b-conf'), adhHrs=gv('b-adhered-hrs'), schedHrs=gv('b-sched-hrs'), adhD=gv('b-adh');
+  let conf=null;
+  if(!isNaN(confD)) conf=confD;
+  else if(!isNaN(schedHrs)&&schedHrs>0&&!isNaN(adhHrs)) conf=(adhHrs/schedHrs)*100;
+  const adh=isNaN(adhD)?null:adhD;
+  return {conf,adh};
+}
+
+function colorCls(v,t){
+  if(isN(v)) return '';
+  if(v>=t) return 'green'; if(v>=t*0.9) return 'yellow'; return 'red';
+}
+function scoreCls(v){ if(isN(v)) return ''; if(v>=4.5) return 'green'; if(v>=4) return 'yellow'; return 'red'; }
+
+function updateMetrics(){
+  const d=bulkMode?computeFromBulk():computeFromCalls();
+  const {conf,adh}=getSchedule();
+  const vals={
+    str:d?d.str:null, tts:d?d.tts:null, conf, adh,
+    aht:d?d.aht:null, know:d?d.knowAvg:null, cour:d?d.courAvg:null, csat:d?d.csat:null, n:d?d.n:0
+  };
+  const metrics=[
+    {id:'str', label:'STR', fmt:v=>v.toFixed(2)+'%', cls:v=>colorCls(v,25)},
+    {id:'tts', label:'TTS', fmt:v=>v.toFixed(2)+'%', cls:v=>colorCls(v,25)},
+    {id:'conf', label:'Conformance', fmt:v=>v.toFixed(2)+'%', cls:v=>colorCls(v,95)},
+    {id:'adh', label:'Adherence', fmt:v=>v.toFixed(2)+'%', cls:v=>colorCls(v,85)},
+    {id:'aht', label:'AHT', fmt:v=>fmtAht(v), cls:()=>''},
+    {id:'know', label:'Knowledge', fmt:v=>v.toFixed(2), cls:v=>scoreCls(v)},
+    {id:'cour', label:'Courtesy', fmt:v=>v.toFixed(2), cls:v=>scoreCls(v)},
+    {id:'csat', label:'CSAT', fmt:v=>v.toFixed(2)+'%', cls:v=>colorCls(v,85)},
+  ];
+  let h='';
+  metrics.forEach(m=>{
+    const v=vals[m.id];
+    const disp=!isN(v)?m.fmt(v):'—';
+    const cls=!isN(v)?m.cls(v):'';
+    const prev=prevM[m.id];
+    const arrow=!isN(v)&&!isN(prev)?(v>prev+.001?'↑':v<prev-.001?'↓':'→'):'';
+    h+=`<div class="mc"><div class="mc-label">${m.label}</div><div class="mc-val ${cls}">${disp}</div><div class="mc-trend">${arrow}${m.id==='n'?'':''}</div></div>`;
+  });
+  h+=`<div class="mc"><div class="mc-label">Calls</div><div class="mc-val">${vals.n||0}</div><div class="mc-trend"></div></div>`;
+  document.getElementById('metrics-display').innerHTML=h;
+  updateCopyBox(vals, d);
+}
+
+function updateCopyBox(vals,d){
+  const box=document.getElementById('copy-box');
+  if(box.style.display==='none') return;
+  box.textContent=buildNotes(vals,d);
+}
+
+function buildNotesFromCurrent(){
+  const d=bulkMode?computeFromBulk():computeFromCalls();
+  const {conf,adh}=getSchedule();
+  const vals={str:d?d.str:null,tts:d?d.tts:null,conf,adh,aht:d?d.aht:null,know:d?d.knowAvg:null,cour:d?d.courAvg:null,csat:d?d.csat:null,n:d?d.n:0};
+  return buildNotes(vals,d);
+}
+
+function buildNotes(vals,d){
+  const agent=gs('f-agent')||'—', date=gs('f-date')||'—';
+  const f=v=>isN(v)?'N/A':v;
+  return `${agent} — ${date}
+Calls: ${vals.n||0}
+AHT: ${isN(vals.aht)?'N/A':fmtAht(vals.aht)}
+Knowledge: ${isN(vals.know)?'N/A':vals.know.toFixed(2)}
+Courtesy: ${isN(vals.cour)?'N/A':vals.cour.toFixed(2)}
+STR: ${isN(vals.str)?'N/A':vals.str.toFixed(2)+'%'}
+TTS: ${isN(vals.tts)?'N/A':vals.tts.toFixed(2)+'%'}
+Conformance: ${isN(vals.conf)?'N/A':vals.conf.toFixed(2)+'%'}
+Adherence: ${isN(vals.adh)?'N/A':vals.adh.toFixed(2)+'%'}
+CSAT: ${isN(vals.csat)?'N/A':vals.csat.toFixed(2)+'%'}`;
+}
+
+function copyNotes(){
+  const box=document.getElementById('copy-box');
+  const txt=buildNotesFromCurrent();
+  box.textContent=txt; box.style.display='block';
+  try{ navigator.clipboard.writeText(txt); }catch(e){}
+}
+
+// ── SAVE / LOAD ────────────────────────────────────────────────────────────
+function saveRecord(){
+  const date=gs('f-date'); if(!date){alert('Please select a date.');return;}
+  const agent=gs('f-agent');
+  const d=bulkMode?computeFromBulk():computeFromCalls();
+  const {conf,adh}=getSchedule();
+  const rec={
+    date,agent,bulkMode,calls:JSON.parse(JSON.stringify(calls)),
+    n:d?d.n:0,aht:d?d.aht:null,str:d?d.str:null,tts:d?d.tts:null,
+    conf,adh,know:d?d.knowAvg:null,cour:d?d.courAvg:null,csat:d?d.csat:null,
+    bFields:{calls:gvs('b-calls'),talk:gvs('b-talk'),hold:gvs('b-hold'),acw:gvs('b-acw'),
+      surv:gvs('b-surv'),tts:gvs('b-tts'),know:gv('b-know'),cour:gv('b-cour'),strSc:gv('b-str-score'),
+      conf:gv('b-conf'),adhHrs:gv('b-adhered-hrs'),schedHrs:gv('b-sched-hrs'),adh:gv('b-adh'),
+      iConf:gv('i-conf'),iAdh:gv('i-adh')},
+    savedAt:new Date().toISOString()
+  };
+  const idx=records.findIndex(r=>r.date===date&&r.agent===agent);
+  if(idx>=0){records[idx]=rec;}else{records.push(rec);}
+  records.sort((a,b)=>b.date.localeCompare(a.date)||(a.agent||'').localeCompare(b.agent||''));
+  store();
+  prevM={str:rec.str,tts:rec.tts,conf:rec.conf,adh:rec.adh,aht:rec.aht,know:rec.know,cour:rec.cour,csat:rec.csat};
+  document.getElementById('last-saved').textContent='Last saved: '+new Date().toLocaleString();
+  document.getElementById('edit-ind').style.display='flex';
+  renderHistory(); renderSummary();
+}
+
+function loadRecord(i){
+  const r=records[i]; if(!r) return;
+  document.getElementById('f-date').value=r.date;
+  document.getElementById('f-agent').value=r.agent||'';
+  calls=JSON.parse(JSON.stringify(r.calls||[]));
+  callIdCounter=calls.length?Math.max(...calls.map(c=>c.id)):0;
+  if(r.bFields){
+    const b=r.bFields;
+    ['calls','talk','hold','acw','surv','tts'].forEach((k,i)=>{const id=['b-calls','b-talk','b-hold','b-acw','b-surv','b-tts'][i];const el=document.getElementById(id);if(el)el.value=b[['calls','talk','hold','acw','surv','tts'][i]]||'';});
+    if(!isNaN(b.know))document.getElementById('b-know').value=b.know;
+    if(!isNaN(b.cour))document.getElementById('b-cour').value=b.cour;
+    if(!isNaN(b.strSc))document.getElementById('b-str-score').value=b.strSc;
+    if(!isNaN(b.conf))document.getElementById('b-conf').value=b.conf;
+    if(!isNaN(b.adhHrs))document.getElementById('b-adhered-hrs').value=b.adhHrs;
+    if(!isNaN(b.schedHrs))document.getElementById('b-sched-hrs').value=b.schedHrs;
+    if(!isNaN(b.adh))document.getElementById('b-adh').value=b.adh;
+    if(!isNaN(b.iConf))document.getElementById('i-conf').value=b.iConf;
+    if(!isNaN(b.iAdh))document.getElementById('i-adh').value=b.iAdh;
+  }
+  bulkMode=r.bulkMode||false;
+  document.getElementById('mode-individual').style.display=bulkMode?'none':'block';
+  document.getElementById('sched-card').style.display=bulkMode?'none':'block';
+  document.getElementById('mode-bulk').style.display=bulkMode?'block':'none';
+  document.getElementById('mode-toggle').textContent=bulkMode?'Switch to individual call mode':'Switch to bulk entry mode';
+  prevM={str:r.str,tts:r.tts,conf:r.conf,adh:r.adh,aht:r.aht,know:r.know,cour:r.cour,csat:r.csat};
+  document.getElementById('edit-ind').style.display='flex';
+  renderCalls(); updateMetrics(); switchTab('entry');
+}
+
+function deleteRecord(i){
+  if(!confirm('Delete this record?')) return;
+  records.splice(i,1); store(); renderHistory(); renderSummary();
+}
+
+function clearSession(){
+  calls=[]; callIdCounter=0;
+  ['b-calls','b-talk','b-hold','b-acw','b-surv','b-tts','b-know','b-cour','b-str-score','b-conf','b-adhered-hrs','b-sched-hrs','b-adh','i-conf','i-adh'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('copy-box').style.display='none';
+  document.getElementById('edit-ind').style.display='none';
+  renderCalls(); updateMetrics();
+}
+
+// ── EXPORT CSV ─────────────────────────────────────────────────────────────
+function exportCSV(){
+  if(!records.length){alert('No records to export.');return;}
+  const rows=[['Date','Agent','Calls','AHT','STR%','TTS%','Conformance%','Adherence%','Knowledge','Courtesy','CSAT%','Saved']];
+  records.forEach(r=>{
+    rows.push([r.date,r.agent||'',r.n||0,isN(r.aht)?'':fmtAht(r.aht),isN(r.str)?'':r.str.toFixed(2),isN(r.tts)?'':r.tts.toFixed(2),isN(r.conf)?'':r.conf.toFixed(2),isN(r.adh)?'':r.adh.toFixed(2),isN(r.know)?'':r.know.toFixed(2),isN(r.cour)?'':r.cour.toFixed(2),isN(r.csat)?'':r.csat.toFixed(2),r.savedAt||'']);
+  });
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='cc_metrics.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── MODE TOGGLE ────────────────────────────────────────────────────────────
+function toggleMode(){
+  bulkMode=!bulkMode;
+  document.getElementById('mode-individual').style.display=bulkMode?'none':'block';
+  document.getElementById('sched-card').style.display=bulkMode?'none':'block';
+  document.getElementById('mode-bulk').style.display=bulkMode?'block':'none';
+  document.getElementById('mode-toggle').textContent=bulkMode?'Switch to individual call mode':'Switch to bulk entry mode';
+  updateMetrics();
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────
+function badge(v,t,isAht,isSc){
+  if(isN(v)) return '<span class="badge neu">N/A</span>';
+  if(isAht) return '<span class="badge neu">'+fmtAht(v)+'</span>';
+  if(isSc){ const c=v>=4.5?'green':v>=4?'yellow':'red'; return '<span class="badge '+c+'">'+v.toFixed(2)+'</span>'; }
+  const c=v>=t?'green':v>=t*.9?'yellow':'red';
+  return '<span class="badge '+c+'">'+v.toFixed(2)+'%</span>';
+}
+
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  if(!records.length){el.innerHTML='<p style="font-size:13px;color:var(--color-text-tertiary)">No records saved yet.</p>';return;}
+  let h='<div style="overflow-x:auto"><table class="ht"><thead><tr><th>Date</th><th>Agent</th><th>Calls</th><th>AHT</th><th>STR</th><th>TTS</th><th>Conf.</th><th>Adh.</th><th>Know.</th><th>Cour.</th><th>CSAT</th><th>Saved</th><th></th></tr></thead><tbody>';
+  records.forEach((r,i)=>{
+    const ts=r.savedAt?new Date(r.savedAt).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    h+=`<tr><td style="font-weight:500;white-space:nowrap">${r.date}</td><td style="color:var(--color-text-secondary)">${r.agent||'—'}</td><td>${r.n||0}</td><td>${badge(r.aht,0,true)}</td><td>${badge(r.str,25)}</td><td>${badge(r.tts,25)}</td><td>${badge(r.conf,95)}</td><td>${badge(r.adh,85)}</td><td>${badge(r.know,0,false,true)}</td><td>${badge(r.cour,0,false,true)}</td><td>${badge(r.csat,85)}</td><td style="font-size:11px;color:var(--color-text-tertiary);white-space:nowrap">${ts}</td>
+    <td style="white-space:nowrap"><button class="btn btn-s btn-sm" onclick="loadRecord(${i})">Edit</button> <button class="btn btn-d btn-sm" onclick="deleteRecord(${i})">Del</button></td></tr>`;
+  });
+  h+='</tbody></table></div>';
+  el.innerHTML=h;
+}
+
+// ── SUMMARY ────────────────────────────────────────────────────────────────
+function avg(arr){ const a=arr.filter(v=>!isN(v)); return a.length?a.reduce((x,y)=>x+y,0)/a.length:null; }
+function cv(v,t){ return isN(v)?'var(--color-text-tertiary)':v>=t?'#1D9E75':v>=t*.9?'#BA7517':'#E24B4A'; }
+function scv(v){ return isN(v)?'var(--color-text-tertiary)':v>=4.5?'#1D9E75':v>=4?'#BA7517':'#E24B4A'; }
+
+function renderSummary(){
+  const period=document.getElementById('sum-period').value;
+  let filt=records;
+  if(period!=='all'){
+    const cut=new Date(); cut.setDate(cut.getDate()-parseInt(period));
+    filt=records.filter(r=>r.date>=cut.toISOString().slice(0,10));
+  }
+  const el=document.getElementById('summary-content');
+  if(!filt.length){el.innerHTML='<p style="font-size:13px;color:var(--color-text-tertiary)">No data for this period.</p>';return;}
+  const aStr=avg(filt.map(r=>r.str)),aTts=avg(filt.map(r=>r.tts));
+  const aCon=avg(filt.map(r=>r.conf)),aAdh=avg(filt.map(r=>r.adh));
+  const aAht=avg(filt.map(r=>r.aht)),aKnow=avg(filt.map(r=>r.know));
+  const aCour=avg(filt.map(r=>r.cour)),aCsat=avg(filt.map(r=>r.csat));
+  const totCalls=filt.reduce((s,r)=>s+(r.n||0),0);
+  el.innerHTML=`<div class="sg">
+    <div class="sc"><div class="sl">Avg STR</div><div class="sv" style="color:${cv(aStr,25)}">${!isN(aStr)?aStr.toFixed(2)+'%':'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg TTS</div><div class="sv" style="color:${cv(aTts,25)}">${!isN(aTts)?aTts.toFixed(2)+'%':'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg Conformance</div><div class="sv" style="color:${cv(aCon,95)}">${!isN(aCon)?aCon.toFixed(2)+'%':'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg Adherence</div><div class="sv" style="color:${cv(aAdh,85)}">${!isN(aAdh)?aAdh.toFixed(2)+'%':'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg AHT</div><div class="sv">${!isN(aAht)?fmtAht(aAht):'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg Knowledge</div><div class="sv" style="color:${scv(aKnow)}">${!isN(aKnow)?aKnow.toFixed(2):'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg Courtesy</div><div class="sv" style="color:${scv(aCour)}">${!isN(aCour)?aCour.toFixed(2):'N/A'}</div></div>
+    <div class="sc"><div class="sl">Avg CSAT</div><div class="sv" style="color:${cv(aCsat,85)}">${!isN(aCsat)?aCsat.toFixed(2)+'%':'N/A'}</div></div>
+    <div class="sc"><div class="sl">Records</div><div class="sv">${filt.length}</div></div>
+    <div class="sc"><div class="sl">Total calls</div><div class="sv">${totCalls}</div></div>
+  </div>
+  <div class="stitle">Records in period</div>
+  <div style="overflow-x:auto;margin-top:8px"><table class="ht"><thead><tr><th>Date</th><th>Agent</th><th>Calls</th><th>AHT</th><th>STR</th><th>Conf.</th><th>Adh.</th><th>Know.</th><th>Cour.</th><th>CSAT</th></tr></thead><tbody>
+  ${filt.map(r=>`<tr><td style="font-weight:500">${r.date}</td><td style="font-size:11px;color:var(--color-text-secondary)">${r.agent||'—'}</td><td>${r.n||0}</td><td>${badge(r.aht,0,true)}</td><td>${badge(r.str,25)}</td><td>${badge(r.conf,95)}</td><td>${badge(r.adh,85)}</td><td>${badge(r.know,0,false,true)}</td><td>${badge(r.cour,0,false,true)}</td><td>${badge(r.csat,85)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+// ── TABS & INIT ────────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const names=['entry','calls','history','summary'];
+  document.querySelectorAll('.tab')[names.indexOf(name)].classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='history') renderHistory();
+  if(name==='summary') renderSummary();
+  if(name==='calls') renderCalls();
+}
+
+// bulk inputs
+document.querySelectorAll('#mode-bulk input, #mode-individual input, #sched-card input').forEach(el=>el.addEventListener('input',updateMetrics));
+
+document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+document.getElementById('sched-card').style.display='block';
+load(); updateMetrics(); renderHistory();
+</script>
